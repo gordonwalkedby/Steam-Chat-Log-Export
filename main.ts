@@ -15,17 +15,15 @@ let nowurl = location.href
 let myid64 = GetUserID64()
 let nextnotice = "nextnotice" + myid64
 if (nowurl.indexOf("ountdata/GetFriendMessagesLog") < 2) {
+    let nows = (new Date()).getTime()
     let vv: number = GM_getValue(nextnotice, 0)
-    if (vv > 2000) {
-        let nows = (new Date()).getTime()
-        if (nows > vv) {
-            GM_notification("您已经七天没有下载和备份steam聊天记录了！", "注意！", "", function () {
-                location.href = logPage
-            })
-            let dt = new Date()
-            dt.setDate(dt.getDate() + 1)
-            GM_setValue(nextnotice, dt.getTime())
-        }
+    if (nows > vv) {
+        GM_notification("您已经很久没有下载和备份steam聊天记录了！及时备份可以保护账号安全。", "注意！", "", function () {
+            location.href = logPage
+        })
+        let dt = new Date()
+        dt.setDate(dt.getDate() + 1)
+        GM_setValue(nextnotice, dt.getTime())
     }
     throw "这不是聊天记录导出页面，嘻嘻"
 }
@@ -81,9 +79,9 @@ button.addEventListener("click", function () {
         StartLoadLoop()
     } else {
         let csv = BuildCSV(outlist)
-        let f = Math.round(Math.random() * 99999 + 1000).toFixed() + ".csv"
-        DownloadText(f, csv)
         let dt = new Date()
+        let f = (dt.getTime() / 1000).toFixed() + ".csv"
+        DownloadText(f, csv)
         dt.setDate(dt.getDate() + 7)
         GM_setValue(nextnotice, dt.getTime())
     }
