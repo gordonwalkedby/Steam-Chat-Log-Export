@@ -1,7 +1,9 @@
 interface SteamChatMessage {
-    SenderID: string, Sender: string,
-    RecipientID: string, Recipient: string,
-    Time: string,
+    SenderID: string,
+    Sender: string,
+    RecipientID: string,
+    Recipient: string,
+    Time: Date,
     Message: string
 }
 
