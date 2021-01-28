@@ -2,8 +2,8 @@
 /// <reference path = "translation.ts" />
 /// <reference path = "helpers.ts" />
 
-
-const logPage = "https://help.steampowered.com/zh-cn/accountdata/GetFriendMessagesLog"
+const logPage = "https://help.steampowered.com/" + lang + "/accountdata/GetFriendMessagesLog"
+const logPageZHCN = "https://help.steampowered.com/zh-cn/accountdata/GetFriendMessagesLog"
 
 let nowurl = location.href
 let myid64 = GetUserID64()
@@ -55,6 +55,7 @@ outDIV.style.height = "300px"
 
 let outText = document.createElement("p")
 outDIV.appendChild(outText)
+outText.innerText = Texts.initText
 
 let readyDownload = false
 let stopNow = false
@@ -113,14 +114,14 @@ AddButton(Texts.startButton, function () {
 //开始工作，首先访问zh-cn的第一页，然后会跳到loadnextpage
 function StartWork(retry: number = 0) {
     if (retry > 3) {
-        GetError("无法访问第一页，重试多次皆超时：", logPage)
+        GetError("无法访问第一页，重试多次皆超时：")
         return
     }
     if (retry > 0) {
         console.error("重试获取第一页", retry)
     }
     GM_xmlhttpRequest({
-        url: logPage,
+        url: logPageZHCN,
         method: "GET",
         timeout: timeout,
         onload: function () {
@@ -139,7 +140,7 @@ function StartWork(retry: number = 0) {
                         let ct = results[1]
                         LoadNextPage(ct)
                     } else {
-                        GetError("请求第一页请求出错：不含 data-continuevalue ，意外！")
+                        WaitToOver()
                     }
                 } else {
                     GetError("请求第一页请求：不含<tbody>，可能是登录掉了！")
@@ -298,19 +299,19 @@ function WaitToOver() {
             AddButton(Texts.csv1, function () {
                 let csv = BuildCSV(outlist, true)
                 let fn = namestr + ".csv"
-                DownloadText(fn, csv)
+                DownloadText(fn, csv, true)
                 UpdateNoticeTime(7)
             })
             AddButton(Texts.csv2, function () {
                 let csv = BuildCSV(outlist, false)
                 let fn = namestr + ".csv"
-                DownloadText(fn, csv)
+                DownloadText(fn, csv, true)
                 UpdateNoticeTime(7)
             })
             AddButton(Texts.json1, function () {
                 let j = BuildJSON(outlist)
                 let fn = namestr + ".json"
-                DownloadText(fn, j)
+                DownloadText(fn, j, false)
                 UpdateNoticeTime(7)
             })
         }

@@ -221,9 +221,14 @@ function BuildJSON(msg: SteamChatMessage[]): string {
 }
 
 // 下载一个文本文件
-function DownloadText(filename: string, content: string) {
+function DownloadText(filename: string, content: string, bom: boolean) {
     var c = document.createElement('a')
-    c.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(content);
+    let s = 'data:text/plain;charset=utf-8,'
+    if (bom) {
+        s += "%ef%bb%bf"
+    }
+    s += encodeURIComponent(content)
+    c.href = s
     c.download = filename
     c.style.display = 'none'
     document.body.appendChild(c)
