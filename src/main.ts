@@ -40,7 +40,7 @@ if (tbodys.length < 1) {
 }
 
 let passedPages: number = 0
-let oldestTime: Date = new Date()
+let oldestTime: string = ""
 let outlist: Array<SteamChatMessage> = []
 
 let outDIV = document.createElement("div")
@@ -286,13 +286,23 @@ function WaitToOver() {
                 }
             })
             readyDownload = true
+            if (outlist.length < 1) {
+                SetProgressText("一个消息都没有，无法导出！")
+                return
+            }
             SetProgressText("获取完成，可以下载到本地了\n" + canceltext)
             GM_notification("准备好您的steam聊天记录导出文件了，您可以来这里下载了。")
             let dt = new Date()
             let namestr = "steam聊天导出_"
             namestr += dt.getFullYear().toString() + "年" + (dt.getMonth() + 1).toString().padStart(2, "0") + "月" + (dt.getDate()).toString().padStart(2, "0") + "日"
-            AddButton("点我下载CSV", function () {
-                let csv = BuildCSV(outlist)
+            AddButton("点我下载CSV（普通人推荐）", function () {
+                let csv = BuildCSV(outlist, true)
+                let fn = namestr + ".csv"
+                DownloadText(fn, csv)
+                UpdateNoticeTime(7)
+            })
+            AddButton("点我下载CSV（纯数字的值不转为字符串）", function () {
+                let csv = BuildCSV(outlist, false)
                 let fn = namestr + ".csv"
                 DownloadText(fn, csv)
                 UpdateNoticeTime(7)

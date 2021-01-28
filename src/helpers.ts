@@ -34,6 +34,7 @@ function GetUserID64(): string {
 }
 
 let usedSeconds = new Map
+let usedMS = new Map
 
 // 解析Chinese 字符串 2021年1月28日下午1:13 CST
 function ParseChineseDateFormat(s: string): Date {
@@ -62,14 +63,23 @@ function ParseChineseDateFormat(s: string): Date {
     // 由于steam返回的文本里面不包含秒数，为了让数据在排序的时候更加可靠，采用了秒数逐渐-1的策略，第一条数据会是这一分钟的59秒，然后是58，直到0秒
     // 缺点：可能会有多条消息都是0秒
     let v: number = 59
+    let ms = 999
     if (usedSeconds.has(kk)) {
         v = usedSeconds.get(kk)
         if (v > 0) {
             v -= 1
+        } else {
+            if (usedMS.has(kk)) {
+                ms = usedMS.get(kk)
+                if (ms > 0) {
+                    ms -= 1
+                }
+            }
+            usedMS.set(kk, ms)
         }
     }
     usedSeconds.set(kk, v)
-    dt.setSeconds(v)
+    dt.setSeconds(v, ms)
     return dt
 }
 
@@ -86,7 +96,7 @@ function DealHTMLTable(html: string): SteamChatMessage[] {
             if (results != null) {
                 let ss = HTMLDecode(results[5])
                 let dt = ParseChineseDateFormat(ss)
-                if (dt.getFullYear() < 2003) {
+                if (dt.getFullYear() < 2000) {
                     GetError("这个日期无法转换： " + ss)
                     return
                 }
@@ -95,7 +105,8 @@ function DealHTMLTable(html: string): SteamChatMessage[] {
                     Sender: HTMLDecode(results[2]),
                     RecipientID: GetID64ByURL(results[3]),
                     Recipient: HTMLDecode(results[4]),
-                    Time: dt,
+                    Time: dt.toLocaleString(),
+                    UTCTime: dt.getTime(),
                     Message: ChangeCRLF(HTMLDecode(results[6]), " ")
                 }
                 outs.push(m)
@@ -124,60 +135,80 @@ function ChangeCRLF(t: string, replaceto: string): string {
 }
 
 // 把字符串引号引起来，如果字符串整个是一个数字，就在前面加一个'
-function Quote(t: string): string {
+function Quote(t: string, num2str: boolean): string {
     if (t.length > 0) {
         t = t.replace(/\"/gim, "\\\"")
-        let r = new RegExp("^[0-9\.]+$", "gim")
-        if (r.test(t)) {
-            t = "'" + t
+        if (num2str) {
+            let r = new RegExp("^[0-9\.]+$", "gim")
+            if (r.test(t)) {
+                t = "'" + t
+            }
         }
     }
     t = "\"" + t + "\""
     return t
 }
 
-// SteamChatMessage接口的值名数组
-const SteamChatMessageKeys = ["SenderID",
-    "Sender",
-    "RecipientID",
-    "Recipient",
-    "Time",
-    "Message"]
+function ConvertSteamChatMessageToMap(v: SteamChatMessage): Map<string, string | number> {
+    let mm = new Map<string, string | number>()
+    mm.set("SenderID", v.SenderID)
+    mm.set("Sender", v.Sender)
+    mm.set("RecipientID", v.RecipientID)
+    mm.set("Recipient", v.Recipient)
+    mm.set("Time", v.Time)
+    mm.set("UTCTime", v.UTCTime)
+    mm.set("Message", v.Message)
+    return mm
+}
 
-// SteamChatMessage接口的数据数组，按值名数组的顺序排的
-function GetSteamChatMessageValues(v: SteamChatMessage): (String | Date)[] {
-    let array = [v.SenderID, v.Sender, v.RecipientID, v.Recipient, v.Time, v.Message]
-    return array
+function GetMapKeys(m: Map<any, any>): string[] {
+    let keys: string[] = []
+    m.forEach(function (v, k, m) {
+        if (k == null) {
+            return
+        }
+        keys.push(k as string)
+    })
+    return keys
 }
 
 //构造steam聊天记录的CSV文件
-function BuildCSV(msg: SteamChatMessage[]): string {
+function BuildCSV(msg: SteamChatMessage[], num2str: boolean): string {
+    if (msg.length < 1) {
+        return ""
+    }
     let o = ""
-    SteamChatMessageKeys.forEach(function (v) {
-        if (o.length > 0) {
+    let first = msg[0]
+    let map1 = ConvertSteamChatMessageToMap(first)
+    let keys = GetMapKeys(map1)
+    keys.forEach(function (kk) {
+        if (o.length > 1) {
             o += ","
         }
-        o += v
+        o += kk
     })
     msg.forEach(function (v) {
         o += "\n"
-        let array = GetSteamChatMessageValues(v)
+        let map2 = ConvertSteamChatMessageToMap(v)
+        let str = ""
+        let dt = new Date
+        let z = "0"
+        dt.setTime(map2.get("UTCTime") as number)
+        str = dt.getFullYear().toString().padStart(4, z) + "/" + (dt.getMonth() + 1).toString().padStart(2, z) + "/"
+        str += dt.getDate().toString().padStart(2, z) + " " + (dt.getHours()).toString().padStart(2, z) + ":"
+        str += (dt.getMinutes()).toString().padStart(2, z) + ":" + (dt.getSeconds)().toString().padStart(2, z)
+        map2.set("Time", str)
         let line = ""
-        array.forEach(function (v2) {
-            var str = ""
-            if (typeof (v2) == "string") {
-                str = v2
-            } else {
-                let z = "0"
-                let dt = v2 as Date
-                str = dt.getFullYear().toString().padStart(4, z) + "/" + (dt.getMonth() + 1).toString().padStart(2, z) + "/"
-                str += dt.getDate().toString().padStart(2, z) + " " + (dt.getHours()).toString().padStart(2, z) + ":"
-                str += (dt.getMinutes()).toString().padStart(2, z) + ":" + (dt.getSeconds)().toString().padStart(2, z)
-            }
+        keys.forEach(function (kk) {
             if (line.length > 2) {
                 line += ","
             }
-            line += Quote(str)
+            let v2 = map2.get(kk)
+            if (v2 == null) {
+                v2 = "null"
+            }
+            str = v2.toString()
+            line += Quote(str, num2str)
         })
         o += line
     })
