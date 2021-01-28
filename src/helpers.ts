@@ -1,14 +1,13 @@
 /// <reference path = "header.ts" />
+/// <reference path = "translation.ts" />
 
 let errlog = ""
 function GetError(...data: any[]): void {
     if (data.length > 0) {
         console.error(data)
-        let line = ""
+        let line = Texts.errorHead
         data.forEach(function (v) {
-            if (line.length > 0) {
-                line += " "
-            }
+            line += " "
             let s: string
             if (v == null) {
                 s = "null"

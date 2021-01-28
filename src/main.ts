@@ -1,5 +1,7 @@
 /// <reference path = "header.ts" />
+/// <reference path = "translation.ts" />
 /// <reference path = "helpers.ts" />
+
 
 const logPage = "https://help.steampowered.com/zh-cn/accountdata/GetFriendMessagesLog"
 
@@ -16,7 +18,7 @@ function UpdateNoticeTime(adddays: number) {
 }
 
 if (nowurl.indexOf("ountdata/GetFriendMessagesLog") < 2) {
-    GM_registerMenuCommand("查看或导出Steam聊天记录", function () {
+    GM_registerMenuCommand(Texts.menubutton1, function () {
         if (location.href == logPage) {
             location.reload()
         } else {
@@ -26,7 +28,7 @@ if (nowurl.indexOf("ountdata/GetFriendMessagesLog") < 2) {
     let nows = (new Date()).getTime()
     let vv: number = GM_getValue(nextnotice, 0)
     if (nows > vv) {
-        GM_notification("您已经很久没有下载和备份steam聊天记录了！及时备份可以保护账号安全。", "注意！", "", function () {
+        GM_notification(Texts.longtimepass, Texts.notice, "", function () {
             location.href = logPage
         })
         UpdateNoticeTime(1)
@@ -59,13 +61,13 @@ let stopNow = false
 
 let lastAppend = ""
 function SetProgressText(append: string | null = null): void {
-    let s = "已完成：" + passedPages.toFixed() + "页\n目前最早的记录：" + oldestTime.toLocaleString() + "\n共有聊天信息" + outlist.length.toFixed() + "条\n"
+    let s = Texts.finishedpages + passedPages.toFixed() + "\n" + Texts.oldestTime + oldestTime.toLocaleString() + "\n" + Texts.messageCount + outlist.length.toFixed() + "\n"
     if (append != null) {
         lastAppend = append
     }
     if (lastAppend.length > 0) { s += lastAppend }
     if (errlog.length > 0) {
-        s += "\n出错！建议刷新本网页，重新开始：\n" + errlog
+        s += "\n" + Texts.anerror + "\n" + errlog
     }
     if (outText.innerText != s) {
         outText.innerText = s
@@ -96,11 +98,11 @@ function RemoveButton(text: string): number {
     return rm
 }
 
-AddButton("按我开始导出\n最近14天的聊天记录", function () {
+AddButton(Texts.startButton, function () {
     SetProgressText()
     setInterval(SetProgressText, 800)
     StartWork()
-    AddButton("立刻终止！", function () {
+    AddButton(Texts.stopButton, function () {
         stopNow = true
         WaitToOver()
         this.remove()
@@ -111,11 +113,11 @@ AddButton("按我开始导出\n最近14天的聊天记录", function () {
 //开始工作，首先访问zh-cn的第一页，然后会跳到loadnextpage
 function StartWork(retry: number = 0) {
     if (retry > 3) {
-        GetError("无法访问第一页1，重试多次皆超时：", logPage)
+        GetError("无法访问第一页，重试多次皆超时：", logPage)
         return
     }
     if (retry > 0) {
-        console.error("重试获取第一页111", retry)
+        console.error("重试获取第一页", retry)
     }
     GM_xmlhttpRequest({
         url: logPage,
@@ -140,10 +142,10 @@ function StartWork(retry: number = 0) {
                         GetError("请求第一页请求出错：不含 data-continuevalue ，意外！")
                     }
                 } else {
-                    GetError("请求第一页请求出错：不含<tbody>，可能是登录掉了！")
+                    GetError("请求第一页请求：不含<tbody>，可能是登录掉了！")
                 }
             } else {
-                GetError("请求第一页请求出错：", this.statusText)
+                GetError("请求第一页请求：", this.statusText)
             }
         }
         , onerror: function () {
@@ -187,7 +189,7 @@ function LoadNextPage(v: string, retry: number = 0) {
                     }, 400)
                 }
             } else {
-                GetError("请求下一页请求出错：", v, this.statusText)
+                LoadNextPage(v, retry += 1)
             }
         }
         , onerror: function () {
@@ -254,11 +256,9 @@ function GetID64ByURL(url: string, retry: number = 0): string {
                         return id64
                     } else {
                         console.error("不可思议，这个主页没有steamid64", url)
-                        GetID64ByURL(url, retry + 1)
                     }
-                } else {
-                    GetError("无法访问steam用户主页：", url, this.statusText)
                 }
+                GetID64ByURL(url, retry + 1)
             }
             , onerror: function () {
                 GetID64ByURL(url, retry + 1)
@@ -276,7 +276,7 @@ function WaitToOver() {
     setInterval(function () {
         if (readyDownload) { return }
         if (readingSteamIDs.length < 1) {
-            RemoveButton("立刻终止")
+            RemoveButton(Texts.stopButton)
             outlist.forEach(function (k, index, aa) {
                 if (k.SenderID.startsWith("http")) {
                     k.SenderID = GetID64ByURL(k.SenderID)
@@ -287,27 +287,27 @@ function WaitToOver() {
             })
             readyDownload = true
             if (outlist.length < 1) {
-                SetProgressText("一个消息都没有，无法导出！")
+                SetProgressText(Texts.noMessage)
                 return
             }
-            SetProgressText("获取完成，可以下载到本地了\n" + canceltext)
-            GM_notification("准备好您的steam聊天记录导出文件了，您可以来这里下载了。")
+            SetProgressText(Texts.readyDownload + "\n" + canceltext)
+            GM_notification(Texts.readyDownloadNotice)
             let dt = new Date()
-            let namestr = "steam聊天导出_"
-            namestr += dt.getFullYear().toString() + "年" + (dt.getMonth() + 1).toString().padStart(2, "0") + "月" + (dt.getDate()).toString().padStart(2, "0") + "日"
-            AddButton("点我下载CSV（普通人推荐）", function () {
+            let namestr = Texts.filename
+            namestr += dt.getFullYear().toString() + "_" + (dt.getMonth() + 1).toString().padStart(2, "0") + "_" + (dt.getDate()).toString().padStart(2, "0")
+            AddButton(Texts.csv1, function () {
                 let csv = BuildCSV(outlist, true)
                 let fn = namestr + ".csv"
                 DownloadText(fn, csv)
                 UpdateNoticeTime(7)
             })
-            AddButton("点我下载CSV（纯数字的值不转为字符串）", function () {
+            AddButton(Texts.csv2, function () {
                 let csv = BuildCSV(outlist, false)
                 let fn = namestr + ".csv"
                 DownloadText(fn, csv)
                 UpdateNoticeTime(7)
             })
-            AddButton("点我下载JSON", function () {
+            AddButton(Texts.json1, function () {
                 let j = BuildJSON(outlist)
                 let fn = namestr + ".json"
                 DownloadText(fn, j)
@@ -319,7 +319,7 @@ function WaitToOver() {
             let sec = (n - startWait) / 1000
             let max = 20
             if (sec > max) {
-                let s = "有一些玩家的id64怎么都获取不到，超时取消："
+                let s = Texts.getid64Timeout
                 readingSteamIDs.forEach(function (v) {
                     s += "\n" + v
                 })
@@ -328,7 +328,7 @@ function WaitToOver() {
                     readingSteamIDs.pop()
                 }
             } else {
-                SetProgressText("正在读取一些玩家的ID64，保证数据可靠性，还剩：" + readingSteamIDs.length.toFixed() + "个id，请稍等，如果还有" + (max - sec).toFixed() + "秒没有获取完成会直接跳过。")
+                SetProgressText(Texts.readingID64 + readingSteamIDs.length.toFixed() + "\n" + Texts.ifreadingID64Timeout + (max - sec).toFixed())
             }
         }
     }, 300)
