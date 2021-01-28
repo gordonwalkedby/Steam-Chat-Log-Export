@@ -6,6 +6,7 @@
 
 
 # 使用办法：
-在[steam官方的聊天记录存档页面](https://help.steampowered.com/zh-cn/accountdata/GetFriendMessagesLog)这个页面的时候，网页左侧会有一个按钮，按了就会开始采集。采集完成后会提示你可以下载了，下载过来是csv文件，用Excel或者WPS浏览效果都很好。   
-csv文件的编写和读取，对程序员来说会很简单，但是不能插入图片或者设置字体等。适合作为程序员存储基本数据。如果你需要分享的话，用 excel 另存为 .xlsx 也可以的。    
+在[steam官方的聊天记录存档页面](https://help.steampowered.com/zh-cn/accountdata/GetFriendMessagesLog)这个页面的时候，网页左侧会有一个按钮，按了就会开始采集。采集完成后会提示你可以下载了，下载过来是csv或是json。    
+如果你不懂编程：csv文件可以直接用Excel表格软件打开（Office或WPS）。如果你需要分享的话，用Excel表格软件另存为 .xlsx 也可以的。     
 
+![这是效果图](https://s3.ax1x.com/2021/01/28/y9MPED.png)   
