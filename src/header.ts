@@ -24,4 +24,3 @@
 // @grant GM_openInTab
 // @noframes
 // ==/UserScript==
-
