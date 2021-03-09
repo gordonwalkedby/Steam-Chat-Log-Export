@@ -2,7 +2,7 @@
 /// <reference path = "translation.ts" />
 /// <reference path = "helpers.ts" />
 
-const logPage = "https://help.steampowered.com/" + lang + "/accountdata/GetFriendMessagesLog"
+const logPage = "https://help.steampowered.com/accountdata/GetFriendMessagesLog"
 const logPageZHCN = "https://help.steampowered.com/zh-cn/accountdata/GetFriendMessagesLog"
 
 let nowurl = location.href
@@ -18,22 +18,21 @@ function UpdateNoticeTime(adddays: number) {
 }
 
 if (nowurl.indexOf("ountdata/GetFriendMessagesLog") < 2) {
+    let openPage = function () {
+        GM_openInTab(logPage, { active: true, insert: true })
+    }
     GM_registerMenuCommand(Texts.menubutton1, function () {
-        if (location.href == logPage) {
-            location.reload()
-        } else {
-            location.href = logPage
-        }
+        openPage()
     })
     let nows = (new Date()).getTime()
     let vv: number = GM_getValue(nextnotice, 0)
     if (nows > vv) {
         GM_notification(Texts.longtimepass, Texts.notice, "", function () {
-            location.href = logPage
+            openPage()
         })
         UpdateNoticeTime(1)
     }
-    throw "这不是聊天记录导出页面，嘻嘻"
+    throw "这不是聊天记录导出页面，脚本退出"
 }
 
 let tbodys = document.getElementsByTagName("tbody")
@@ -150,6 +149,11 @@ function StartWork(retry: number = 0) {
             }
         }
         , onerror: function () {
+            GetError("请求第一页请求：出错！")
+            StartWork(retry + 1)
+        }
+        , ontimeout: function () {
+            GetError("请求第一页请求：超时！")
             StartWork(retry + 1)
         }
     })
@@ -194,6 +198,11 @@ function LoadNextPage(v: string, retry: number = 0) {
             }
         }
         , onerror: function () {
+            GetError("HTTP 出错：页面：", v)
+            LoadNextPage(v, retry += 1)
+        }
+        , ontimeout: function () {
+            GetError("超时：页面：", v)
             LoadNextPage(v, retry += 1)
         }
     })
@@ -262,6 +271,11 @@ function GetID64ByURL(url: string, retry: number = 0): string {
                 GetID64ByURL(url, retry + 1)
             }
             , onerror: function () {
+                console.error("请求ID信息出错：", url)
+                GetID64ByURL(url, retry + 1)
+            }
+            , ontimeout: function () {
+                console.error("请求ID信息超时：", url)
                 GetID64ByURL(url, retry + 1)
             }
         })
