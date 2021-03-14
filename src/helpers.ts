@@ -22,14 +22,11 @@ function GetError(...data: any[]): void {
 
 // 获取当前steam用户id64
 function GetUserID64(): string {
-    let s = document.cookie
-    s.toString()
-    let r = new RegExp("steamRememberLogin=([0-9]{17})")
-    let results = r.exec(s)
-    if (results == null) {
+    let s = g_steamID
+    if (s.length != 17) {
         throw "没有登录steam！"
     }
-    return results[1]
+    return s
 }
 
 let usedSeconds = new Map
