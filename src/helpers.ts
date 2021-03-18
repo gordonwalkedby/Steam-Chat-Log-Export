@@ -22,11 +22,23 @@ function GetError(...data: any[]): void {
 
 // 获取当前steam用户id64
 function GetUserID64(): string {
-    let s = g_steamID
-    if (s.length != 17) {
-        throw "没有登录steam！"
+    let es = document.getElementsByClassName("mainmenu_contents")
+    if (es.length < 1) {
+        throw "cannot find mainmenu_contents"
     }
-    return s
+    let div = es.item(0) as HTMLDivElement
+    es = div.getElementsByTagName("a")
+    for (let i = 0; i < es.length; i++) {
+        let ah = es.item(i) as HTMLAnchorElement
+        let attr = ah.getAttributeNode("data-miniprofile")
+        if (attr != null) {
+            let s = attr.value
+            if (s.length > 0) {
+                return s
+            }
+        }
+    }
+    throw "cannot find data-miniprofile"
 }
 
 let usedSeconds = new Map

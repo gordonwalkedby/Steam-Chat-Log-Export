@@ -6,7 +6,7 @@
 // @namespace https://walkedby.com/
 // @supportURL https://github.com/gordonwalkedby/Steam-Chat-Log-Export
 // @homepage https://github.com/gordonwalkedby/Steam-Chat-Log-Export
-// @version 1.5
+// @version 1.6
 // @description I can export your steam chat log into csv or json.
 // @description:zh-CN Steam平台只为你保留14天的聊天记录。我将其打包成csv或json，供您下载，自己备份好哦，建议每个周末来这里保存一次。
 // @description:zh-TW Steam平台只為你保留14天的聊天記錄。我將其打包成csv或json，供您下載，自己備份好哦，建議每個週末來這裡保存一次。 
