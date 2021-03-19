@@ -123,9 +123,9 @@ function StartWork(retry: number = 0) {
         url: logPageZHCN,
         method: "GET",
         timeout: timeout,
-        onload: function () {
-            if (this.status == 200) {
-                let jj = this.responseText
+        onload: function (rep) {
+            if (rep.status == 200) {
+                let jj = rep.responseText
                 if (jj.indexOf("<tbody>") > 10) {
                     passedPages += 1
                     let l = DealHTMLTable(jj)
@@ -145,11 +145,11 @@ function StartWork(retry: number = 0) {
                     GetError("请求第一页请求：不含<tbody>，可能是登录掉了！")
                 }
             } else {
-                GetError("请求第一页请求：", this.statusText)
+                GetError("请求第一页请求：", rep.statusText)
             }
         }
-        , onerror: function () {
-            GetError("请求第一页请求：出错！")
+        , onerror: function (rep) {
+            GetError("请求第一页请求：出错！" + rep.error)
             StartWork(retry + 1)
         }
         , ontimeout: function () {
@@ -175,9 +175,9 @@ function LoadNextPage(v: string, retry: number = 0) {
         url: "https://help.steampowered.com/zh-cn/accountdata/AjaxLoadMoreData/?url=GetFriendMessagesLog&continue=" + v,
         method: "GET",
         timeout: timeout,
-        onload: function () {
-            if (this.status == 200) {
-                let jj = this.responseText
+        onload: function (rep) {
+            if (rep.status == 200) {
+                let jj = rep.responseText
                 let data: SteamChatLogDataJSON = JSON.parse(jj)
                 let l = DealHTMLTable(data.html)
                 l.forEach(function (v, i, aa) {
@@ -197,8 +197,8 @@ function LoadNextPage(v: string, retry: number = 0) {
                 LoadNextPage(v, retry += 1)
             }
         }
-        , onerror: function () {
-            GetError("HTTP 出错：页面：", v)
+        , onerror: function (rep) {
+            GetError("HTTP 出错：页面：", v, rep.error)
             LoadNextPage(v, retry += 1)
         }
         , ontimeout: function () {
@@ -254,10 +254,10 @@ function GetID64ByURL(url: string, retry: number = 0): string {
             url: url,
             method: "GET",
             timeout: timeout,
-            onload: function () {
-                if (this.status == 200) {
+            onload: function (rep) {
+                if (rep.status == 200) {
                     reg = new RegExp("g_rgProfileData.+?\"([0-9]{17})", "gim")
-                    results = reg.exec(this.responseText)
+                    results = reg.exec(rep.responseText)
                     if (results != null) {
                         let id64 = results[1]
                         SteamIDCache.set(url, id64)
@@ -270,8 +270,8 @@ function GetID64ByURL(url: string, retry: number = 0): string {
                 }
                 GetID64ByURL(url, retry + 1)
             }
-            , onerror: function () {
-                console.error("请求ID信息出错：", url)
+            , onerror: function (rep) {
+                console.error("请求ID信息出错：", url, rep.error)
                 GetID64ByURL(url, retry + 1)
             }
             , ontimeout: function () {
