@@ -1,5 +1,5 @@
 # Steam 聊天记录导出
-这是我写的一个油猴脚本啦。
+这是我写的一个 Tampermonkey 脚本。
 可以在[steam官方的聊天记录存档页面](https://help.steampowered.com/zh-cn/accountdata/GetFriendMessagesLog)导出全部的数据（我指的是steam官方允许你能看见的那部分，也就是最近14天）。Steam官方只保留了14天，14天以前的steam就不提供了。    
 Steam官方只保留了14天，14天以前的steam就不提供了。   
 官方网页只能一页一页翻看聊天记录，不能导出。所以我就设计了这个。     
@@ -8,7 +8,8 @@ Steam官方只保留了14天，14天以前的steam就不提供了。
 如果你不懂编程：csv文件可以直接用Excel表格软件打开（Office或WPS）。如果你需要分享的话，用Excel表格软件另存为 .xlsx 也可以的。   
 如果你逛普通的steam网站，在登录状态下，如果七天没有使用脚本备份数据的话，就会发提醒（超过七天之后是一天发一次）。    
 
-安装请到： [greasy fork](https://greasyfork.org/scripts/420714-steam-chat-log-export)
+安装请到： [greasy fork](https://greasyfork.org/scripts/420714-steam-chat-log-export)   
+**注意：我的API使用是按照 Tampermonkey 来编写的，不保证支持其他的脚本扩展（比如 Greasemonkey）。**    
 
 # 使用办法：
 在[steam官方的聊天记录存档页面](https://help.steampowered.com/zh-cn/accountdata/GetFriendMessagesLog)这个页面的时候，网页左侧会有一个按钮，按了就会开始采集。采集完成后会提示你可以下载了，下载过来是csv或是json。    
